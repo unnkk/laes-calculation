@@ -2,6 +2,8 @@ import unnkk.utils.MatrixUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Scanner;
 
 public class Main {
@@ -19,7 +21,7 @@ public class Main {
         System.out.println("This program calculates the determinant of square matrix with n*n size and B column");
         int n = Integer.parseInt(scan.nextLine()); //no checks, 4sure
 
-        double[][] matrix = MatrixUtils.getMatrix(n, scan); //generating square matrix
+        BigDecimal[][] matrix = MatrixUtils.getMatrix(n, scan); //generating square matrix
 
         matrix = MatrixUtils.GaussJordan(matrix); //magic happens here
 
@@ -27,7 +29,7 @@ public class Main {
 
         System.out.println("System roots are:");
         for(int i = 0; i < n; i++){
-            System.out.printf("x%d = %.3f\n", i + 1, matrix[i][n]);
+            System.out.printf("x%d = %.1f\n", i + 1, matrix[i][n].setScale(1, RoundingMode.HALF_EVEN));
         }
     }
 
