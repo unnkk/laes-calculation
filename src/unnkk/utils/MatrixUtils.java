@@ -18,6 +18,7 @@ public class MatrixUtils {
 
         //forward elimination phase of Gaussian elimination
         for(int i = 0; i < n; i++){
+            partialPivoting(result, i);
             normalizeToOne(result, i);
             for(int j = i + 1; j < n; j++) {
                 if(!result[j][i].equals(BigDecimal.ZERO)) {
@@ -39,18 +40,24 @@ public class MatrixUtils {
         return result;
     }
 
+    private static void partialPivoting(BigDecimal[][] matrix, int i) {
+        int maxIndex = i;
+        for(int j = i + 1; j < matrix.length; j++){
+            if(matrix[j][i].abs().compareTo(matrix[maxIndex][i].abs()) > 0){
+                maxIndex = j;
+            }
+        }
+        if(maxIndex != i){
+            BigDecimal[] temp = matrix[i];
+            matrix[i] = matrix[maxIndex];
+            matrix[maxIndex] = temp;
+        }
+    }
+
     //this is really hard to work with fractions, what are resulted here
     //but, thank god, i've solved it in round() (losing precision, of course)
     private static void normalizeToOne(BigDecimal[][] matrix, int i) {
-        int n = matrix.length;
         if(!matrix[i][i].equals(BigDecimal.ONE)){
-            //if matrix[i][i] is zero, you cannot just divide it to make 1, so we're creating non-zero value
-            for(int j = i + 1; matrix[i][i].equals(BigDecimal.ZERO) && j < n; j++){
-                if(!matrix[j][i].equals(BigDecimal.ZERO)){
-                    matrix[i] = lineSubstitution(matrix[i], matrix[j]);
-                }
-            }
-
             matrix[i] = lineDivision(matrix[i], matrix[i][i]); //n divided by n is 1
         }
     }
@@ -140,28 +147,5 @@ public class MatrixUtils {
             if(i < n - 1) System.out.print(",\n");
         }
         System.out.println("]");
-    }
-
-    //DEPRECATED AREA
-
-
-
-
-
-
-    //ts is ass, rounding
-    @Deprecated
-    private static double round(double value) {
-        if (value != 0 && Math.abs(value % 1) >= 1/Math.pow(10, 3)) {
-            return Math.round(value * Math.pow(10, 4)) / Math.pow(10, 4);
-        } else return (int)value;
-    }
-
-    //ass with control of places for rounding
-    @Deprecated
-    private static double round(double value, int places) {
-        if (value != 0 && Math.abs(value % 1) >= 1/Math.pow(10, places - 1)) {
-            return Math.round(value * Math.pow(10, places)) / Math.pow(10, places);
-        } else return (int)value;
     }
 }
