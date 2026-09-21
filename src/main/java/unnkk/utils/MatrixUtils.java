@@ -1,6 +1,7 @@
 package unnkk.utils;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -9,6 +10,37 @@ public class MatrixUtils {
     private static final Scanner scan = new Scanner(System.in);
     public static final int PRECISION = 30;
 
+    private static boolean GaussFwd(BigDecimal[][] matrix){
+        int n = matrix.length;
+
+        for(int i = 0; i < n; i++){
+            partialPivoting(matrix, i);
+            if(matrix[i][i].equals(BigDecimal.ZERO)) return false;
+            normalizeToOne(matrix, i);
+            for(int j = i + 1; j < n; j++) {
+                if(!matrix[j][i].equals(BigDecimal.ZERO)) {
+                    matrix[j] = lineSubstitution(matrix[j],
+                            lineMultiplication(matrix[i], matrix[j][i]));
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private static void GaussBwd(BigDecimal[][] matrix){
+        int n = matrix.length;
+
+        for(int i = n - 1; i >= 0; i--){
+            for(int j = i - 1; j >= 0; j--) {
+                if(!matrix[j][i].equals(BigDecimal.ZERO)) {
+                    matrix[j] = lineSubstitution(matrix[j],
+                            lineMultiplication(matrix[i], matrix[j][i]));
+                }
+            }
+        }
+    }
+
     public static BigDecimal[][] GaussJordan(BigDecimal[][] matrix){
         int n = matrix.length;
         BigDecimal[][] result = new BigDecimal[n][n + 1]; //i don't really want to modify matrix
@@ -16,26 +48,12 @@ public class MatrixUtils {
             result[i] = Arrays.copyOf(matrix[i], matrix[i].length);
         }
 
-        //forward elimination phase of Gaussian elimination
-        for(int i = 0; i < n; i++){
-            partialPivoting(result, i);
-            normalizeToOne(result, i);
-            for(int j = i + 1; j < n; j++) {
-                if(!result[j][i].equals(BigDecimal.ZERO)) {
-                    result[j] = lineSubstitution(result[j],
-                            lineMultiplication(result[i], result[j][i]));
-                }
-            }
+        if(!GaussFwd(result)) {
+            System.out.println("Determinant is zero, no solution for now");
+            return null;
         }
         //back-substitution in Gaussian elimination
-        for(int i = n - 1; i >= 0; i--){
-            for(int j = i - 1; j >= 0; j--) {
-                if(!result[j][i].equals(BigDecimal.ZERO)) {
-                    result[j] = lineSubstitution(result[j],
-                            lineMultiplication(result[i], result[j][i]));
-                }
-            }
-        }
+        GaussBwd(result);
 
         return result;
     }
@@ -68,6 +86,7 @@ public class MatrixUtils {
 
         for(int i = 0; i < n; i++){
             result[i] =  minuend[i].subtract(subtrahend[i]);
+            if(result[i].compareTo(new BigDecimal("0E-30")) <= 0) result[i] = BigDecimal.ZERO;
         }
 
         return result;
@@ -94,6 +113,7 @@ public class MatrixUtils {
         
         for(int i = 0; i < n; i++){
             result[i] = dividend[i].divide(divisor, PRECISION, RoundingMode.HALF_EVEN);
+            if(result[i].abs().compareTo(new BigDecimal("0E-30")) <= 0) result[i] = BigDecimal.ZERO;
         }
         
         return result;
