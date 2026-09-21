@@ -5,7 +5,6 @@ import unnkk.utils.MatrixUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Scanner;
 
 public class Main {
@@ -20,20 +19,24 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        int n = Integer.parseInt(scan.nextLine()); //no checks, 4sure
-
-
-        BigDecimal[][] matrix = MatrixUtils.getMatrix(n, scan); //generating square matrix
-
-        matrix = MatrixUtils.GaussJordan(matrix); //magic happens here
-
-        if(matrix == null) return;
-        MatrixUtils.printMatrix(matrix);
-
-        System.out.println("System roots are:");
-        for(int i = 0; i < n; i++) {
-            System.out.printf("x%d = %.1f\n", i + 1, matrix[i][n].setScale(1, RoundingMode.HALF_EVEN));
+        String[] input = scan.nextLine().split("\\s+");
+        int n, m;
+        try{
+            n = Integer.parseInt(input[0]);
+            m = Integer.parseInt(input[1]);
+        }catch (Exception e){
+            System.out.println("FATAL: Failed to parse 'system.txt', please go and check it.");
+            return;
         }
+
+        if(n < m) {
+            System.out.println("Count of equations is not enough, no solution for now.");
+            return;
+        }
+
+        BigDecimal[][] matrix = MatrixUtils.getMatrix(n, m, scan); //generating square matrix
+
+        MatrixUtils.GaussJordan(matrix); //magic happens here
     }
 
 

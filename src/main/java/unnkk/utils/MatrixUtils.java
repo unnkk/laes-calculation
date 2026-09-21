@@ -1,7 +1,6 @@
 package unnkk.utils;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -12,8 +11,9 @@ public class MatrixUtils {
 
     private static boolean GaussFwd(BigDecimal[][] matrix){
         int n = matrix.length;
+        int m = matrix[0].length - 1;
 
-        for(int i = 0; i < n; i++){
+        for(int i = 0; i < m; i++){
             partialPivoting(matrix, i);
             if(matrix[i][i].equals(BigDecimal.ZERO)) return false;
             normalizeToOne(matrix, i);
@@ -29,9 +29,9 @@ public class MatrixUtils {
     }
 
     private static void GaussBwd(BigDecimal[][] matrix){
-        int n = matrix.length;
+        int m = matrix[0].length - 1;
 
-        for(int i = n - 1; i >= 0; i--){
+        for(int i = m - 1; i >= 0; i--){
             for(int j = i - 1; j >= 0; j--) {
                 if(!matrix[j][i].equals(BigDecimal.ZERO)) {
                     matrix[j] = lineSubstitution(matrix[j],
@@ -43,18 +43,32 @@ public class MatrixUtils {
 
     public static BigDecimal[][] GaussJordan(BigDecimal[][] matrix){
         int n = matrix.length;
-        BigDecimal[][] result = new BigDecimal[n][n + 1]; //i don't really want to modify matrix
+        int m = matrix[0].length - 1;
+
+        BigDecimal[][] result = new BigDecimal[n][m + 1]; //i don't really want to modify matrix
         for(int i = 0; i < n; i++){
             result[i] = Arrays.copyOf(matrix[i], matrix[i].length);
         }
 
         if(!GaussFwd(result)) {
             System.out.println("Determinant is zero, no solution for now");
+
+            printMatrix(result, false);
             return null;
         }
         //back-substitution in Gaussian elimination
         GaussBwd(result);
 
+        if(m != n) {
+            BigDecimal[][] trimmedResult = new BigDecimal[m][m + 1]; //trimming result if there is zeroed strings
+            for (int i = 0; i < n; i++) {
+                result[i] = Arrays.copyOf(matrix[i], matrix[i].length);
+            }
+            printMatrix(trimmedResult, true);
+            return trimmedResult;
+        }
+
+        printMatrix(result, true);
         return result;
     }
 
@@ -119,26 +133,26 @@ public class MatrixUtils {
         return result;
     }
 
-    //generating matrix with n*(n + 1) size
-    public static BigDecimal[][] getMatrix(int n){
-        BigDecimal[][] matrix = new BigDecimal[n][n + 1];
+    //generating matrix with n*(m + 1) size [(m + 1) is for containing B column]
+    public static BigDecimal[][] getMatrix(int n, int m){
+        BigDecimal[][] matrix = new BigDecimal[n][m + 1];
         for(int i = 0; i < n; i++){
             System.out.println("Enter the " + (i + 1) + " line of matrix, separated by spaces:");
             BigDecimal[] input = Arrays.stream(scan.nextLine().trim().split("\\s+"))
                     .map(BigDecimal::new)
-                    .limit(n + 1)
+                    .limit(m + 1)
                     .toArray(BigDecimal[]::new);
             matrix[i] = input;
         }
         return matrix;
     }
 
-    public static BigDecimal[][] getMatrix(int n, Scanner sc) {
-        BigDecimal[][] matrix = new BigDecimal[n][n + 1];
+    public static BigDecimal[][] getMatrix(int n, int m, Scanner sc) {
+        BigDecimal[][] matrix = new BigDecimal[n][m + 1];
         for(int i = 0; i < n; i++){
             BigDecimal[] input = Arrays.stream(sc.nextLine().trim().split("\\s+"))
                     .map(BigDecimal::new)
-                    .limit(n + 1)
+                    .limit(m + 1)
                     .toArray(BigDecimal[]::new);
             matrix[i] = input;
         }
@@ -146,26 +160,36 @@ public class MatrixUtils {
     }
 
     //generating matrix with n*(n + 1) size initiated with 'value' as every element
-    public static BigDecimal[][] getMatrix(int n, BigDecimal value){
-        BigDecimal[][] matrix = new BigDecimal[n][n + 1];
+    public static BigDecimal[][] getMatrix(int n, int m, BigDecimal value){
+        BigDecimal[][] matrix = new BigDecimal[n][m];
         for(int i = 0; i < n; i++){
             Arrays.fill(matrix[i], value);
         }
         return matrix;
     }
 
-    public static void printMatrix(BigDecimal[][] matrix){
+    public static void printMatrix(BigDecimal[][] matrix, boolean roots){
         int n = matrix.length;
+        int m = matrix[0].length - 1;
         System.out.print("[");
         for(int i = 0; i < n; i++){
             System.out.print("[");
-            for(int j = 0; j < n + 1; j++){
+            for(int j = 0; j < m + 1; j++){
                 System.out.print(matrix[i][j].setScale(1, RoundingMode.HALF_EVEN));
-                if(j < n) System.out.print(", ");
+                if(j < m) System.out.print(", ");
             }
             System.out.print("]");
             if(i < n - 1) System.out.print(",\n");
         }
         System.out.println("]");
+        if(roots) printRoots(matrix);
+    }
+
+    private static void printRoots(BigDecimal[][] matrix){
+        int n = matrix.length;
+        System.out.println("System roots are:");
+        for(int i = 0; i < n; i++) {
+            System.out.printf("x%d = %.1f\n", i + 1, matrix[i][n].setScale(1, RoundingMode.HALF_EVEN));
+        }
     }
 }
