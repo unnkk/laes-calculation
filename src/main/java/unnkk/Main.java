@@ -1,10 +1,10 @@
 package unnkk;
 
-import unnkk.utils.MatrixUtils;
+import unnkk.math.Matrix;
+import unnkk.math.matrix.MatrixUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.math.BigDecimal;
 import java.util.Scanner;
 
 public class Main {
@@ -29,7 +29,8 @@ public class Main {
             return;
         }
 
-        BigDecimal[][] matrix = MatrixUtils.getMatrix(n, m, scan); //generating square matrix
+        Matrix matrix = new Matrix(m, n + 1);
+        matrix.fill(scan);
 
         MatrixUtils.gauss(matrix); //magic happens here
     }
