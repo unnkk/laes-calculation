@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'unnkk'
-version = 'v0.4'
+version = 'v0.5'
 
 repositories {
     mavenCentral()
